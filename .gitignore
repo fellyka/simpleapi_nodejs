@@ -1,4 +1,4 @@
-#doten files
+#dotenv files
 **/*.env
 
 #node_modules
