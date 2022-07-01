@@ -1,5 +1,7 @@
 //********** Necessary imports*/
 const express = require('express');
+const bcrypt = require('bcrypt')
+
 const User = require('../models/user')
 
 //********** Express Router configuration*/
@@ -41,10 +43,17 @@ router.put('',(req,res)=>{
             if(user != null){
                 return res.status(409).json({message:`The user ${name} already exists`})
             }
-
-            User.create(req.body)
-                .then(user =>res.json({message:'User Created', data:user}))
-                .catch(err =>res.status(500).json({message:'Database Error', error:err}))
+            //User's password hashing
+            bcrypt.hash(password, parseInt(process.env.BCRYPT_SALT_ROUND))
+                  .then(hash =>{
+                    req.body.password = hash // 64 character hashed password
+                    
+                    //User creation
+                    User.create(req.body)
+                    .then(user =>res.json({message:'User Created', data:user}))
+                    .catch(err =>res.status(500).json({message:'Database Error', error:err}))
+                  })
+                  .catch(err =>res.status(500).json({message:'Hash Process Error',error:err}))
         })
         .catch(err=> res.status(500).json({message:'Database Error', error:err}))
 });
