@@ -57,6 +57,57 @@ router.put('',(req,res)=>{
         })
         .catch(err=> res.status(500).json({message:'Database Error', error:err}))
 });
-router.patch('/:id');
-router.delete('/:id');
+router.patch('/:id', (req,res)=>{
+    let userId = parseInt(req.params.id)
+
+    if(!userId){
+        return res.status(400).json({message: 'Missing parameter'})
+    }
+    //User found?
+    User.findOne({where: {id: userId}, raw:true})
+        .then(user =>{
+            //check whetheruser exist
+            if(user == null){
+                return res.status(404).json({message:'This user does not exist'})
+            }
+            User.update(req.body,{where:{id:userId}})
+                .then(user=>res.json({message:'User updated'}))
+                .catch(err=>res.status(500).json({message:`Database Error , error ${err}`}))
+        }).catch(err=>res.status(500).json({message:`Database Error , error ${err}`}))
+});
+
+router.post('/trash/:id',(req,res)=>{
+    let userId = parseInt(req.params.id)
+
+    if(!userId){
+        return res.status(400).json({message:'Missing parameter'})
+    }
+    User.restore({where:{id:userId}})
+        .then(()=>res.status(204).json({}))
+        .catch(err=>res.status(500).json({message:'Database Error',error:err}))
+})
+
+
+router.delete('/:id',(req,res)=>{
+    let userId = parseInt(req.params.id)
+    if(!userId){
+        return res.status(400).json({message:'Missing parameter'})
+    }
+    User.destroy({where:{id:userId}})
+        .then(()=>res.status(204).json({}))
+        .catch(err =>res.status(500).json({message:'Databae Error', error:err}))
+});
+
+
+router.delete('/:id',(req,res)=>{
+    let userId = parseInt(req.params.id)
+    if(!userId){
+        return res.status(400).json({message:'Missing parameter'})
+    }
+    User.destroy({where:{id:userId}, force:true}) //data are forever deleted in the DB
+        .then(()=>res.status(204).json({}))
+        .catch(err =>res.status(500).json({message:'Databae Error', error:err}))
+});
+
+module.exports = router;
 
